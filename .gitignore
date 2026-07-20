@@ -5,3 +5,6 @@ __pycache__/
 .ruff_cache/
 mission/output/
 .DS_Store
+reference/
+.claude/
+practice/
