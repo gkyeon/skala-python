@@ -3,8 +3,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
-mission/output/
+종합실습 01/output/
 .DS_Store
 reference/
 .claude/
 practice/
+종합실습 02/
