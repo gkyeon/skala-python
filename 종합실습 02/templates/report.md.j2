@@ -1,0 +1,63 @@
+# Adult Census Income 분석 리포트
+
+생성 시각: {{ generated_at }}
+
+## 1. 데이터 개요
+
+- 원본 데이터: {{ raw_shape[0] }}행 x {{ raw_shape[1] }}열
+- 정제 후 데이터: {{ cleaned_shape[0] }}행 x {{ cleaned_shape[1] }}열 (결측치 처리 + 중복 제거 완료)
+- 제거된 행 수: {{ raw_shape[0] - cleaned_shape[0] }}행
+
+## 2. 기술통계 (수치형 변수)
+
+| 컬럼 | count | mean | std | min | 25% | 50% | 75% | max |
+|---|---|---|---|---|---|---|---|---|
+{% for row in descriptive_stats -%}
+| {{ row.column }} | {{ "%.0f"|format(row.count) }} | {{ "%.2f"|format(row.mean) }} | {{ "%.2f"|format(row.std) }} | {{ "%.2f"|format(row.min) }} | {{ "%.2f"|format(row["25%"]) }} | {{ "%.2f"|format(row["50%"]) }} | {{ "%.2f"|format(row["75%"]) }} | {{ "%.2f"|format(row.max) }} |
+{% endfor %}
+
+## 3. 상관관계
+
+수치형 변수 간 상관관계 히트맵:
+
+![상관관계 히트맵]({{ correlation_heatmap_path }})
+
+{% if top_correlation is defined -%}
+가장 상관관계가 높은 두 변수: **{{ top_correlation.col_a }}** ↔ **{{ top_correlation.col_b }}** (r = {{ "%.2f"|format(top_correlation.value) }})
+{%- endif %}
+
+## 4. 통계 검정: t-test ('{{ ttest.group_a }}' vs '{{ ttest.group_b }}' on '{{ ttest.value_col }}')
+
+- '{{ ttest.group_a }}' 그룹 평균: {{ "%.2f"|format(ttest.mean_a) }} (n={{ ttest.n_a }})
+- '{{ ttest.group_b }}' 그룹 평균: {{ "%.2f"|format(ttest.mean_b) }} (n={{ ttest.n_b }})
+- t-statistic: {{ "%.4f"|format(ttest.t_stat) }}
+- p-value: {{ "%.4f"|format(ttest.p_value) }}
+
+{% if ttest.is_significant -%}
+**결론**: {{ ttest.interpretation }} (p < {{ ttest.alpha }})
+{% else -%}
+**결론**: {{ ttest.interpretation }} (p >= {{ ttest.alpha }})
+{%- endif %}
+
+## 5. ML Pipeline 평가 결과
+
+- 학습 데이터: {{ pipeline.n_train }}행 / 테스트 데이터: {{ pipeline.n_test }}행
+- Accuracy: {{ "%.4f"|format(pipeline.accuracy) }}
+- F1-score: {{ "%.4f"|format(pipeline.f1) }}
+- 모델 저장 경로: `{{ pipeline.model_path }}`
+- 재로딩 검증: {{ "통과" if pipeline.reload_matches else "실패" }}
+
+```
+{{ pipeline.classification_report }}
+```
+
+## 6. 인터랙티브 차트
+
+income 그룹별 주당 근무시간 분포 (정적 스냅샷 — 실제 인터랙티브 버전은 아래 HTML 링크):
+
+![income별 근무시간 분포]({{ income_hours_chart_static_path }})
+
+- 인터랙티브 HTML: [{{ income_hours_chart_path }}]({{ income_hours_chart_path }})
+
+---
+이 리포트는 `src/report.py`에 의해 자동 생성되었습니다.
